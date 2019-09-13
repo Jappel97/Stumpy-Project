@@ -17,11 +17,15 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.D))
         {
-            this.gameObject.transform.position = new Vector3(this.transform.position.x + speed, this.transform.position.y);
+            this.gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(speed, 0);
         }
         else if (Input.GetKey(KeyCode.A))
         {
-            this.gameObject.transform.position = new Vector3(this.transform.position.x - speed, this.transform.position.y);
+            this.gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(-speed, 0);
+        }
+        else
+        {
+            this.gameObject.GetComponent<Rigidbody2D>().velocity = this.gameObject.GetComponent<Rigidbody2D>().velocity - new Vector2((1 / speed) * Time.deltaTime, 0);
         }
         if(Input.GetKeyDown(KeyCode.Space))
         {
