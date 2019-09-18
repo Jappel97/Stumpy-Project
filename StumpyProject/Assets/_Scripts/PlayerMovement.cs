@@ -4,32 +4,80 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Range (0, 10)]
     public float speed;
+    private float startTime;
+    private bool TimeToStop;
+    private float lastFrame;
+    private int prevDir;
     
     // Start is called before the first frame update
     void Start()
     {
-        
+        startTime = 0;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey(KeyCode.D))
+        if (Input.GetAxis("Horizontal") != 0)
         {
-            this.gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(speed, 0);
-        }
-        else if (Input.GetKey(KeyCode.A))
-        {
-            this.gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(-speed, 0);
+            if (startTime == 0)
+            {
+                startTime = Time.time;
+            }
+            Move((int)Mathf.Sign(Input.GetAxis("Horizontal")), startTime);
+            lastFrame = Input.GetAxis("Horizontal");
         }
         else
         {
-            this.gameObject.GetComponent<Rigidbody2D>().velocity = this.gameObject.GetComponent<Rigidbody2D>().velocity - new Vector2((1 / speed) * Time.deltaTime, 0);
+            if (lastFrame != 0)
+            {
+                TimeToStop = true;
+                startTime = Time.time;
+                prevDir = (int)Mathf.Sign(lastFrame);
+                lastFrame = 0;
+            }
+            if (TimeToStop)
+            {
+                Stop(prevDir, startTime);
+            }
         }
-        if(Input.GetKeyDown(KeyCode.Space))
+    }
+
+    //Force = Mass times Acceleration
+    void Move(int direction, float myTime)
+    {
+        this.GetComponent<Rigidbody2D>().velocity = (new Vector2(speed * direction * accelFunc(Time.time - myTime), 0));
+    }
+
+    void Stop(int direction, float myTime)
+    {
+        if (deccelFunc(Time.time - myTime) > 0)
         {
-            this.gameObject.transform.position = new Vector3(this.transform.position.x, this.transform.position.y + 10);
+            this.GetComponent<Rigidbody2D>().velocity = (new Vector2((speed/2) * direction * deccelFunc(Time.time - myTime), 0));
         }
+        else
+        {
+            this.GetComponent<Rigidbody2D>().velocity = new Vector2(0, this.GetComponent<Rigidbody2D>().velocity.y);
+            TimeToStop = false;
+            startTime = 0;
+        }
+    }
+
+    //Function that calculates the change in velocity as a function of time.
+    //Ideally goes from 0 to top in about .5 sec
+    //To get this behavior we have a(t) = 9.6(-.2*3.7^-2.6t - .5) + 1
+    float accelFunc(float time)
+    {
+        return Mathf.Pow(4 * time, 2) > 1 ? 1 : Mathf.Pow(4 * time, 2);
+    }
+
+
+    //Another acceleration function which models the decay in velocity as the player lets off of the control.
+    //Ideally goes from top speed to 0 in about .1 or .2 sec?
+    float deccelFunc(float time)
+    {
+        return (float)System.Math.Round((double)Mathf.Exp(-64 * time), 2);
     }
 }
