@@ -10,11 +10,13 @@ public class PlayerMovement : MonoBehaviour
     private bool TimeToStop;
     private float lastFrame;
     private int prevDir;
+    private bool isJumping;
     
     // Start is called before the first frame update
     void Start()
     {
         startTime = 0;
+        isJumping = false;
     }
 
     // Update is called once per frame
@@ -42,6 +44,10 @@ public class PlayerMovement : MonoBehaviour
             {
                 Stop(prevDir, startTime);
             }
+        }
+        if (Input.GetButtonDown("Jump"))
+        {
+            jump();
         }
     }
 
@@ -79,5 +85,19 @@ public class PlayerMovement : MonoBehaviour
     float deccelFunc(float time)
     {
         return (float)System.Math.Round((double)Mathf.Exp(-64 * time), 2);
+    }
+
+    void jump()
+    {
+        if (isJumping)
+        {
+            return;
+        }
+        else
+        {
+            isJumping = false;
+            this.GetComponent<Rigidbody2D>().AddForce(new Vector2(0, 10));
+        }
+        return;
     }
 }
