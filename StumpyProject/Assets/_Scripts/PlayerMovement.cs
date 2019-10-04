@@ -6,17 +6,20 @@ public class PlayerMovement : MonoBehaviour
 {
     [Range (0, 10)]
     public float speed;
+    public GameObject myFeet;
     private float startTime;
     private bool TimeToStop;
     private float lastFrame;
     private int prevDir;
-    private bool isJumping;
+    private FootCheck groundCheck;
+    public int jumpForce;
+    
     
     // Start is called before the first frame update
     void Start()
     {
         startTime = 0;
-        isJumping = false;
+        groundCheck = myFeet.GetComponent<FootCheck>();
     }
 
     // Update is called once per frame
@@ -54,14 +57,14 @@ public class PlayerMovement : MonoBehaviour
     //Force = Mass times Acceleration
     void Move(int direction, float myTime)
     {
-        this.GetComponent<Rigidbody2D>().velocity = (new Vector2(speed * direction * accelFunc(Time.time - myTime), 0));
+        this.GetComponent<Rigidbody2D>().velocity = (new Vector2(speed * direction * accelFunc(Time.time - myTime), this.GetComponent<Rigidbody2D>().velocity.y));
     }
 
     void Stop(int direction, float myTime)
     {
         if (deccelFunc(Time.time - myTime) > 0)
         {
-            this.GetComponent<Rigidbody2D>().velocity = (new Vector2((speed/2) * direction * deccelFunc(Time.time - myTime), 0));
+            this.GetComponent<Rigidbody2D>().velocity = (new Vector2((speed/2) * direction * deccelFunc(Time.time - myTime), this.GetComponent<Rigidbody2D>().velocity.y));
         }
         else
         {
@@ -89,14 +92,13 @@ public class PlayerMovement : MonoBehaviour
 
     void jump()
     {
-        if (isJumping)
+        if (!groundCheck.isGrounded)
         {
             return;
         }
         else
         {
-            isJumping = false;
-            this.GetComponent<Rigidbody2D>().AddForce(new Vector2(0, 10));
+            this.GetComponent<Rigidbody2D>().AddForce(new Vector2(0, jumpForce));
         }
         return;
     }
